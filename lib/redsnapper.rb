@@ -15,8 +15,8 @@ class RedSnapper
     command = [ TARSNAP, '-tf', @archive, *@options[:tarsnap_options] ]
     command.push(@options[:directory]) if @options[:directory]
 
-    files = IO.popen(command) do |io|
-      io.gets(nil).split.reject { |f| f.end_with?('/') }
+    files = Open3.popen3(*command) do |_, out, _|
+      out.gets(nil).split.reject { |f| f.end_with?('/') }
     end
 
     files.each_slice([ (files.size.to_f / THREAD_POOL_SIZE).ceil, MAX_FILES_PER_JOB].min).to_a
@@ -28,10 +28,10 @@ class RedSnapper
 
     file_groups.each do |chunk|
       pool.process do
-        command = [ TARSNAP, '-xvf', @archive, *@options[:tarsnap_options], *chunk ]
+        command = [ TARSNAP, '-xvf', @archive, *(@options[:tarsnap_options] + chunk) ]
         Open3.popen3(*command) do |_, _, err|
           while line = err.gets
-            mutex.synchronize { warn line }
+            mutex.synchronize { warn line.chomp }
           end
         end
       end
