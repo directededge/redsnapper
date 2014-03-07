@@ -1,0 +1,16 @@
+#!/usr/bin/env ruby
+
+require 'optparse'
+require File.expand_path('../../lib/redsnapper', __FILE__)
+
+options = {}
+
+OptionParser.new do |opts|
+  opts.banner = "Usage: redsnapper archive [-d DIR] [-- [TARSNAP OPTIONS]]"
+  opts.on("-d", "--directory DIR", "Extract files from this directory of the archive") do |dir|
+    options[:directory] = dir
+  end
+end.parse!
+
+RedSnapper.new(ARGV.shift, options.merge(:tarsnap_options => ARGV)).run
+
