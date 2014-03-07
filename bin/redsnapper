@@ -6,8 +6,8 @@ require File.expand_path('../../lib/redsnapper', __FILE__)
 options = {}
 
 OptionParser.new do |opts|
-  opts.banner = "Usage: redsnapper archive [-d DIR] [-- [TARSNAP OPTIONS]]"
-  opts.on("-d", "--directory DIR", "Extract files from this directory of the archive") do |dir|
+  opts.banner = 'Usage: redsnapper archive [-d DIR] [-- [TARSNAP OPTIONS]]'
+  opts.on('-d', '--directory DIR', 'Extract files from this directory of the archive') do |dir|
     options[:directory] = dir
   end
 end.parse!
