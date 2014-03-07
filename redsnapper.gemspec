@@ -27,7 +27,8 @@ Gem::Specification.new do |s|
     "Rakefile",
     "VERSION",
     "bin/redsnapper",
-    "lib/redsnapper.rb"
+    "lib/redsnapper.rb",
+    "redsnapper.gemspec"
   ]
   s.homepage = "http://github.com/directededge/redsnapper"
   s.licenses = ["MIT"]
