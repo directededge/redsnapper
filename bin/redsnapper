@@ -13,4 +13,3 @@ OptionParser.new do |opts|
 end.parse!
 
 RedSnapper.new(ARGV.shift, options.merge(:tarsnap_options => ARGV)).run
-

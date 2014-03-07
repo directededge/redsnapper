@@ -17,8 +17,8 @@ Jeweler::Tasks.new do |gem|
   gem.name = "redsnapper"
   gem.homepage = "http://github.com/directededge/redsnapper"
   gem.license = "MIT"
-  gem.summary = %Q{TODO: one-line summary of your gem}
-  gem.description = %Q{TODO: longer description of your gem}
+  gem.summary = %Q{Faster extraction of large tarsnap archives}
+  gem.description = %Q{Faster extraction of large tarsnap archives using a pool of parallel tarsnap clients}
   gem.email = "scott@directededge.com"
   gem.authors = ["Scott Wheeler"]
   # dependencies defined in Gemfile
