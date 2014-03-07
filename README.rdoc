@@ -1,16 +1,12 @@
 = redsnapper
 
-Description goes here.
+Simple tool to run parallel tarsnap clients to do faster extractions of archives
+with lots of files.  Note, extraction will be slower on small archives since this
+tool first has to build a list of files to extract.  It then runs 25 clients in
+parallel delivering approximately a 5x speedup in extracting large archives.
 
-== Contributing to redsnapper
- 
-* Check out the latest master to make sure the feature hasn't been implemented or the bug hasn't been fixed yet.
-* Check out the issue tracker to make sure someone already hasn't requested it and/or contributed it.
-* Fork the project.
-* Start a feature/bugfix branch.
-* Commit and push until you are happy with your contribution.
-* Make sure to add tests for it. This is important so I don't break it in a future version unintentionally.
-* Please try not to mess with the Rakefile, version, or history. If you want to have your own version, or is otherwise necessary, that is fine, but please isolate to its own commit so I can cherry-pick around it.
+  Usage: redsnapper archive [-d DIR] [-- [TARSNAP OPTIONS]]
+      -d, --directory DIR              Extract files from this directory of the archive
 
 == Copyright
 
