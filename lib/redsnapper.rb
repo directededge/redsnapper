@@ -10,21 +10,22 @@ class RedSnapper
   end
 
   def files
-    @files ||= `#{TARSNAP} #{@args.join(' ')} -tf #{@archive}`.split.reject do |file|
+    files = `#{TARSNAP} -tf \"#{@archive}\" #{@args.join(' ')} opt`.split.reject do |file|
       file.end_with?('/')
     end
+    files.each_slice([ (files.size.to_f / THREAD_POOL_SIZE).ceil, 20].min).to_a
   end
 
   def run
     pool = Thread.pool(THREAD_POOL_SIZE)
     mutex = Mutex.new
 
-    files.each do |file|
+    files.each do |chunk|
       pool.process do
-        unless system("#{TARSNAP} #{@args.join(' ')} -xf #{@archive} \"#{file}\"")
-          mutex.syncronize { warn "Error extracting #{file}" }
+        block = chunk.map { |f| "\"#{f}\"" }.join(' ')
+        unless system(TARSNAP, '-xvf', @archive, *@args, *chunk)
+          # mutex.syncronize { warn "Error extracting #{file}" }
         end
-        mutex.synchronize { puts "-> #{file}" }
       end
     end
 
