@@ -3,7 +3,7 @@ require 'open3'
 
 class RedSnapper
   TARSNAP = 'tarsnap'
-  THREAD_POOL_SIZE = 20
+  THREAD_POOL_SIZE = 25
   MAX_FILES_PER_JOB = 50
 
   def initialize(archive, options = {})
