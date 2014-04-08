@@ -19,7 +19,7 @@ class RedSnapper
       out.gets(nil).split.reject { |f| f.end_with?('/') }
     end
 
-    files.each_slice([ (files.size.to_f / THREAD_POOL_SIZE).ceil, MAX_FILES_PER_JOB].min).to_a
+    files.each_slice([ (files.size.to_f / THREAD_POOL_SIZE).ceil, MAX_FILES_PER_JOB ].min).to_a
   end
 
   def run
