@@ -16,7 +16,7 @@ class RedSnapper
     command.push(@options[:directory]) if @options[:directory]
 
     files = Open3.popen3(*command) do |_, out, _|
-      out.gets(nil).split.reject { |f| f.end_with?('/') }
+      out.gets(nil).split("\n").reject { |f| f.end_with?('/') }
     end
 
     files.each_slice([ (files.size.to_f / THREAD_POOL_SIZE).ceil, MAX_FILES_PER_JOB ].min).to_a
