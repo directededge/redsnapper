@@ -1,10 +1,9 @@
-source "http://rubygems.org"
+source 'http://rubygems.org'
 
-gem "thread", :require => "thread/pool"
-gem "fast_trie", :require => "trie"
+gem 'thread', :require => 'thread/pool'
 
 group :development do
-  gem "rdoc", "~> 3.12"
-  gem "bundler", "~> 1.0"
-  gem "jeweler", "~> 2.0"
+  gem 'rdoc', '~> 3.12'
+  gem 'bundler', '~> 1.0'
+  gem 'jeweler', '~> 2.0'
 end
