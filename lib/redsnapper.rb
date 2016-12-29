@@ -2,6 +2,21 @@ require 'thread/pool'
 require 'open3'
 require 'set'
 
+class Array
+  def interleaved_slices(max_per_slice)
+    raise ArgumentError unless max_per_slice >= 1
+
+    count = (size.to_f / max_per_slice).ceil
+
+    slices = (1..count).map { [] }
+    each_with_index do |v, i|
+      slices[i % count].push(v)
+    end
+
+    slices
+  end
+end
+
 class RedSnapper
   TARSNAP = 'tarsnap'
   THREAD_POOL_SIZE = 10
@@ -40,7 +55,7 @@ class RedSnapper
     end
 
     files.push(*empty_dirs)
-    files.each_slice([ (files.size.to_f / THREAD_POOL_SIZE).ceil, MAX_FILES_PER_JOB ].min).to_a
+    files.interleaved_slices([ (files.size.to_f / THREAD_POOL_SIZE).ceil, MAX_FILES_PER_JOB ].min)
   end
 
   def run
