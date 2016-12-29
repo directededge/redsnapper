@@ -25,6 +25,8 @@ class RedSnapper
   def initialize(archive, options = {})
     @archive = archive
     @options = options
+    @max_files_per_job = options[:max_files_per_job] || MAX_FILES_PER_JOB
+    @thread_pool_size = options[:thread_pool_size] || THREAD_POOL_SIZE
   end
 
   def file_groups
@@ -55,11 +57,12 @@ class RedSnapper
     end
 
     files.push(*empty_dirs)
-    files.interleaved_slices([ (files.size.to_f / THREAD_POOL_SIZE).ceil, MAX_FILES_PER_JOB ].min)
+    files_per_slice = [ (files.size.to_f / @thread_pool_size).ceil, @max_files_per_job ].min
+    files.interleaved_slices(files_per_slice)
   end
 
   def run
-    pool = Thread.pool(THREAD_POOL_SIZE)
+    pool = Thread.pool(@thread_pool_size)
     mutex = Mutex.new
 
     file_groups.each do |chunk|
