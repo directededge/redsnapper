@@ -30,23 +30,28 @@ class RedSnapper
   end
 
   def file_groups
-    command = [ TARSNAP, '-tf', @archive, *@options[:tarsnap_options] ]
+    command = [ TARSNAP, '-tvf', @archive, *@options[:tarsnap_options] ]
     command.push(@options[:directory]) if @options[:directory]
 
     files = []
+    sizes = {}
     dirs = Set.new
 
     Open3.popen3(*command) do |_, out, _|
       out.gets(nil).split("\n").each do |entry|
-        if entry.end_with?('/')
-          dirs.add(entry)
+        (_, _, _, _, size, _, _, _, name) = entry.split(/\s+/, 9)
+        if name.end_with?('/')
+          dirs.add(name)
         else
-          files.push(entry)
+          sizes[name] = size.to_i
+          files.push(name)
         end
       end
     end
 
     files.each { |f| dirs.delete(File.dirname(f) + '/') }
+    files.sort! { |a, b| sizes[b] <=> sizes[a] }
+
     empty_dirs = dirs.clone
 
     dirs.each do |dir|
