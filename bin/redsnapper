@@ -13,10 +13,6 @@ OptionParser.new do |opts|
   opts.on('-j', '--jobs COUNT', Integer, 'Number of workers to use') do |jobs|
     options[:thread_pool_size] = jobs
   end
-  opts.on('-m', '--max-files-per-job COUNT', Integer,
-          'Maximum number of files to extract in one job') do |count|
-    options[:max_files_per_job] = count
-  end
 end.parse!
 
 RedSnapper.new(ARGV.shift, options.merge(:tarsnap_options => ARGV)).run

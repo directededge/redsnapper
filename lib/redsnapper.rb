@@ -2,39 +2,36 @@ require 'thread/pool'
 require 'open3'
 require 'set'
 
-class Array
-  def interleaved_slices(max_per_slice)
-    raise ArgumentError unless max_per_slice >= 1
-
-    count = (size.to_f / max_per_slice).ceil
-
-    slices = (1..count).map { [] }
-    each_with_index do |v, i|
-      slices[i % count].push(v)
-    end
-
-    slices
-  end
-end
-
 class RedSnapper
   TARSNAP = 'tarsnap'
   THREAD_POOL_SIZE = 10
-  MAX_FILES_PER_JOB = 1000
+
+  class Group
+    attr_reader :files, :size
+    def initialize
+      @files = []
+      @size = 0
+    end
+    def add(name, size)
+      @files << name
+      @size += size
+    end
+    def <=>(other)
+      other.size <=> size
+    end
+  end
 
   def initialize(archive, options = {})
     @archive = archive
     @options = options
-    @max_files_per_job = options[:max_files_per_job] || MAX_FILES_PER_JOB
     @thread_pool_size = options[:thread_pool_size] || THREAD_POOL_SIZE
   end
 
-  def file_groups
+  def files
     command = [ TARSNAP, '-tvf', @archive, *@options[:tarsnap_options] ]
     command.push(@options[:directory]) if @options[:directory]
 
-    files = []
-    sizes = {}
+    files = {}
     dirs = Set.new
 
     Open3.popen3(*command) do |_, out, _|
@@ -43,14 +40,12 @@ class RedSnapper
         if name.end_with?('/')
           dirs.add(name)
         else
-          sizes[name] = size.to_i
-          files.push(name)
+          files[name] = size.to_i
         end
       end
     end
 
-    files.each { |f| dirs.delete(File.dirname(f) + '/') }
-    files.sort! { |a, b| sizes[b] <=> sizes[a] }
+    files.each { |f, _| dirs.delete(File.dirname(f) + '/') }
 
     empty_dirs = dirs.clone
 
@@ -61,9 +56,17 @@ class RedSnapper
       end
     end
 
-    files.push(*empty_dirs)
-    files_per_slice = [ (files.size.to_f / @thread_pool_size).ceil, @max_files_per_job ].min
-    files.interleaved_slices(files_per_slice)
+    empty_dirs.each { |dir| files[dir] = 0 }
+
+    files
+  end
+
+  def file_groups
+    groups = (1..@thread_pool_size).map { Group.new }
+    files.sort { |a, b| b.last <=> a.last }.each do |file|
+      groups.sort.last.add(*file)
+    end
+    groups.map(&:files)
   end
 
   def run
