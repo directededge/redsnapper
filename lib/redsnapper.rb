@@ -45,14 +45,13 @@ class RedSnapper
       end
     end
 
-    files.each { |f, _| dirs.delete(File.dirname(f) + '/') }
-
     empty_dirs = dirs.clone
+    files.each { |f, _| empty_dirs.delete(File.dirname(f) + '/') }
 
     dirs.each do |dir|
-      components = dir.split('/')
-      components.each_with_index do |component, i|
-        empty_dirs.delete(components[0, i].join('/') + '/')
+      components = dir.split('/')[0..-2]
+      components.each_with_index do |_, i|
+        empty_dirs.delete(components[0, i + 1].join('/') + '/')
       end
     end
 
