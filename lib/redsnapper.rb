@@ -34,10 +34,12 @@ class RedSnapper
   end
 
   def file_sizes
+    return @sizes if @sizes
+    
     command = [ TARSNAP, '-tvf', @archive, *@options[:tarsnap_options] ]
     command.push(@options[:directory]) if @options[:directory]
 
-    sizes = {}
+    @sizes = {}
     dirs = Set.new
 
     Open3.popen3(*command) do |_, out, _|
@@ -46,13 +48,13 @@ class RedSnapper
         if name.end_with?('/')
           dirs.add(name)
         else
-          sizes[name] = size.to_i
+          @sizes[name] = size.to_i
         end
       end
     end
 
     empty_dirs = dirs.clone
-    sizes.each { |f, _| empty_dirs.delete(File.dirname(f) + '/') }
+    @sizes.each { |f, _| empty_dirs.delete(File.dirname(f) + '/') }
 
     dirs.each do |dir|
       components = dir.split('/')[0..-2]
@@ -61,9 +63,9 @@ class RedSnapper
       end
     end
 
-    empty_dirs.each { |dir| sizes[dir] = 0 }
+    empty_dirs.each { |dir| @sizes[dir] = 0 }
 
-    sizes
+    @sizes
   end
 
   def file_groups
