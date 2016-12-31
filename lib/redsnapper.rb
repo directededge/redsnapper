@@ -4,7 +4,7 @@ require 'set'
 
 class RedSnapper
   TARSNAP = 'tarsnap'
-  THREAD_POOL_SIZE = 10
+  THREAD_POOL_DEFAULT_SIZE = 10
 
   class Group
     attr_reader :files, :size
@@ -24,7 +24,7 @@ class RedSnapper
   def initialize(archive, options = {})
     @archive = archive
     @options = options
-    @thread_pool_size = options[:thread_pool_size] || THREAD_POOL_SIZE
+    @thread_pool_size = options[:thread_pool_size] || THREAD_POOL_DEFAULT_SIZE
   end
 
   def files
