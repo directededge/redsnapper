@@ -5,6 +5,7 @@ require 'set'
 class RedSnapper
   TARSNAP = 'tarsnap'
   THREAD_POOL_DEFAULT_SIZE = 10
+  EXIT_ERROR = "tarsnap: Error exit delayed from previous errors.\n"
 
   @@output_mutex = Mutex.new
 
@@ -29,6 +30,7 @@ class RedSnapper
     @thread_pool =
       options[:thread_pool] ||
       Thread.pool(options[:thread_pool_size] || THREAD_POOL_DEFAULT_SIZE)
+    @error = false
   end
 
   def files
@@ -78,6 +80,10 @@ class RedSnapper
         command = [ TARSNAP, '-xvf', @archive, *(@options[:tarsnap_options] + chunk) ]
         Open3.popen3(*command) do |_, _, err|
           while line = err.gets
+            if line == EXIT_ERROR
+              @error = true
+              next
+            end
             @@output_mutex.synchronize { warn line.chomp }
           end
         end
@@ -85,5 +91,6 @@ class RedSnapper
     end
 
     @thread_pool.shutdown unless @options[:thread_pool]
+    @@output_mutex.synchronize { warn EXIT_ERROR } if @error
   end
 end
