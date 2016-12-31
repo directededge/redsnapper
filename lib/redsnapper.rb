@@ -27,9 +27,7 @@ class RedSnapper
   def initialize(archive, options = {})
     @archive = archive
     @options = options
-    @thread_pool =
-      options[:thread_pool] ||
-      Thread.pool(options[:thread_pool_size] || THREAD_POOL_DEFAULT_SIZE)
+    @thread_pool = Thread.pool(options[:thread_pool_size] || THREAD_POOL_DEFAULT_SIZE)
     @error = false
   end
 
@@ -96,7 +94,7 @@ class RedSnapper
       end
     end
 
-    @thread_pool.shutdown unless @options[:thread_pool]
+    @thread_pool.shutdown
     @@output_mutex.synchronize { warn EXIT_ERROR } if @error
   end
 end
