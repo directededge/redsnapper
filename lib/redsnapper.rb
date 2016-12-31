@@ -68,6 +68,10 @@ class RedSnapper
     @sizes
   end
 
+  def files
+    @files ||= file_sizes.keys
+  end
+
   def file_groups
     groups = (1..@thread_pool.max).map { Group.new }
     file_sizes.sort { |a, b| b.last <=> a.last }.each do |file|
