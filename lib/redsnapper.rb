@@ -26,7 +26,9 @@ class RedSnapper
   def initialize(archive, options = {})
     @archive = archive
     @options = options
-    @thread_pool_size = options[:thread_pool_size] || THREAD_POOL_DEFAULT_SIZE
+    @thread_pool =
+      options[:thread_pool] ||
+      Thread.pool(options[:thread_pool_size] || THREAD_POOL_DEFAULT_SIZE)
   end
 
   def files
@@ -63,7 +65,7 @@ class RedSnapper
   end
 
   def file_groups
-    groups = (1..@thread_pool_size).map { Group.new }
+    groups = (1..@thread_pool.max).map { Group.new }
     files.sort { |a, b| b.last <=> a.last }.each do |file|
       groups.sort.last.add(*file)
     end
@@ -71,10 +73,8 @@ class RedSnapper
   end
 
   def run
-    pool = Thread.pool(@thread_pool_size)
-
     file_groups.each do |chunk|
-      pool.process do
+      @thread_pool.process do
         command = [ TARSNAP, '-xvf', @archive, *(@options[:tarsnap_options] + chunk) ]
         Open3.popen3(*command) do |_, _, err|
           while line = err.gets
@@ -84,6 +84,6 @@ class RedSnapper
       end
     end
 
-    pool.shutdown
+    @thread_pool.shutdown unless @options[:thread_pool]
   end
 end
