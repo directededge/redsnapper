@@ -6,6 +6,8 @@ class RedSnapper
   TARSNAP = 'tarsnap'
   THREAD_POOL_DEFAULT_SIZE = 10
 
+  @@output_mutex = Mutex.new
+
   class Group
     attr_reader :files, :size
     def initialize
@@ -70,14 +72,13 @@ class RedSnapper
 
   def run
     pool = Thread.pool(@thread_pool_size)
-    mutex = Mutex.new
 
     file_groups.each do |chunk|
       pool.process do
         command = [ TARSNAP, '-xvf', @archive, *(@options[:tarsnap_options] + chunk) ]
         Open3.popen3(*command) do |_, _, err|
           while line = err.gets
-            mutex.synchronize { warn line.chomp }
+            @@output_mutex.synchronize { warn line.chomp }
           end
         end
       end
