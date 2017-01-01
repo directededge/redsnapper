@@ -1,6 +1,7 @@
 require 'thread/pool'
 require 'open3'
 require 'set'
+require 'date'
 
 class RedSnapper
   TARSNAP = 'tarsnap'
@@ -41,9 +42,14 @@ class RedSnapper
 
     Open3.popen3(*command) do |_, out, _|
       out.gets(nil).split("\n").each do |entry|
-        (_, _, _, _, size, _, _, _, name) = entry.split(/\s+/, 9)
+        (_, _, _, _, size, month, day, year_or_time, name) = entry.split(/\s+/, 9)
+
+        date = DateTime.parse("#{month} #{day}, #{year_or_time}")
+        date = date.prev_year if date < DateTime.now
+
         @files[name] = {
-          :size => size.to_i
+          :size => size.to_i,
+          :date => date
         }
       end
     end
