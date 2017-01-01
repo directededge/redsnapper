@@ -73,7 +73,7 @@ class RedSnapper
 
   def file_groups
     groups = (1..@thread_pool.max).map { Group.new }
-    files_to_extract.sort { |a, b| a.last[:size] <=> b.last[:size] }.to_h.each do |name, props|
+    files_to_extract.sort { |a, b| b.last[:size] <=> a.last[:size] }.each do |name, props|
       groups.sort.last.add(name, props[:size])
     end
     groups.map(&:files)
