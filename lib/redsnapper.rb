@@ -31,49 +31,50 @@ class RedSnapper
     @error = false
   end
 
-  def file_sizes
-    return @sizes if @sizes
-    
+  def files
+    return @files if @files
+
     command = [ TARSNAP, '-tvf', @archive, *@options[:tarsnap_options] ]
     command.push(@options[:directory]) if @options[:directory]
 
-    @sizes = {}
-    dirs = Set.new
+    @files = {}
 
     Open3.popen3(*command) do |_, out, _|
       out.gets(nil).split("\n").each do |entry|
         (_, _, _, _, size, _, _, _, name) = entry.split(/\s+/, 9)
-        if name.end_with?('/')
-          dirs.add(name)
-        else
-          @sizes[name] = size.to_i
-        end
+        @files[name] = {
+          :size => size.to_i
+        }
       end
     end
 
-    empty_dirs = dirs.clone
-    @sizes.each { |f, _| empty_dirs.delete(File.dirname(f) + '/') }
+    @files
+  end
 
+  def empty_dirs(files, dirs)
+    empty_dirs = dirs.clone
+    files.each { |f| empty_dirs.delete(File.dirname(f) + '/') }
     dirs.each do |dir|
       components = dir.split('/')[0..-2]
       components.each_with_index do |_, i|
         empty_dirs.delete(components[0, i + 1].join('/') + '/')
       end
     end
-
-    empty_dirs.each { |dir| @sizes[dir] = 0 }
-
-    @sizes
+    empty_dirs
   end
 
-  def files
-    @files ||= file_sizes.keys
+  def files_to_extract
+    files_to_extract, dirs = files.partition { |f| !f.first.end_with?('/') }.map(&:to_h)
+    empty_dirs(files_to_extract.keys, dirs.keys).each do |dir|
+      files_to_extract[dir] = { :size => 0 }
+    end
+    files_to_extract
   end
 
   def file_groups
     groups = (1..@thread_pool.max).map { Group.new }
-    file_sizes.sort { |a, b| b.last <=> a.last }.each do |file|
-      groups.sort.last.add(*file)
+    files_to_extract.sort { |a, b| a.last[:size] <=> b.last[:size] }.to_h.each do |name, props|
+      groups.sort.last.add(name, props[:size])
     end
     groups.map(&:files)
   end
