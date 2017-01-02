@@ -6,7 +6,9 @@ require 'date'
 class RedSnapper
   TARSNAP = 'tarsnap'
   THREAD_POOL_DEFAULT_SIZE = 10
+
   EXIT_ERROR = "tarsnap: Error exit delayed from previous errors.\n"
+  NOT_OLDER_ERROR = "File on disk is not older; skipping.\n"
 
   @@output_mutex = Mutex.new
 
@@ -99,6 +101,7 @@ class RedSnapper
         command = [ TARSNAP, '-xvf', @archive, *(@options[:tarsnap_options] + chunk) ]
         Open3.popen3(*command) do |_, _, err|
           while line = err.gets
+            next if line.end_with?(NOT_OLDER_ERROR)
             if line == EXIT_ERROR
               @error = true
               next
