@@ -80,7 +80,15 @@ class RedSnapper
   def file_groups
     groups = (1..@thread_pool.max).map { Group.new }
     files_to_extract.sort { |a, b| b.last[:size] <=> a.last[:size] }.each do |name, props|
-      groups.sort.last.add(name, props[:size])
+
+      # If the previous batch of files had an entry with the same size and date,
+      # assume that this is a duplicate and assign it zero weight.  There may be
+      # some false positives here since the granularity of the data we have from
+      # tarsnap is only "same day".  However, a false positive just affects the
+      # queing scheme, not which files get queued.
+
+      size = (@options[:previous] && @options[:previous][name] == props) ? 0 : props[:size]
+      groups.sort.last.add(name, size)
     end
     groups.map(&:files)
   end
