@@ -90,7 +90,7 @@ class RedSnapper
       size = (@options[:previous] && @options[:previous][name] == props) ? 0 : props[:size]
       groups.sort.last.add(name, size)
     end
-    groups.map(&:files)
+    groups.map(&:files).reject(&:empty?)
   end
 
   def run
