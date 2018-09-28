@@ -13,3 +13,9 @@ parallel delivering approximately a 5x speedup in extracting large archives.
 Copyright (c) 2014 Scott Wheeler. See LICENSE.txt for
 further details.
 
+=== Installation
+
+redsnapper can be installed via gem, Ruby's package manager.  Install gem via
+the ruby or rubygems package for your platform, and then run:
+
+    gem install redsnapper
