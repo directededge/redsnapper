@@ -8,6 +8,12 @@ parallel delivering approximately a 5x speedup in extracting large archives.
   Usage: redsnapper archive [-d DIR] [-- [TARSNAP OPTIONS]]
       -d, --directory DIR              Extract files from this directory of the archive
 
+== Installation on Debian 
+
+  sudo apt install ruby-bundler ruby-dev libyaml-dev zlib1g-dev liblzma-dev
+  bundle install
+  ./bin/redsnapper
+
 == Copyright
 
 Copyright (c) 2014 Scott Wheeler. See LICENSE.txt for
