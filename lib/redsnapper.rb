@@ -10,6 +10,8 @@ class RedSnapper
   EXIT_ERROR = "tarsnap: Error exit delayed from previous errors.\n"
   NOT_OLDER_ERROR = "File on disk is not older; skipping.\n"
 
+  GLOB_CHARS = '*?[]{}'
+
   @@output_mutex = Mutex.new
 
   class Group
@@ -98,6 +100,7 @@ class RedSnapper
   def run
     file_groups.each do |chunk|
       @thread_pool.process do
+        chunk.map! { |file| file.gsub(/([#{Regexp.escape(GLOB_CHARS)}])/) { |m| "\\#{m}" } }
         command = [ TARSNAP, '-xvf', @archive, *(@options[:tarsnap_options] + chunk) ]
         Open3.popen3(*command) do |_, _, err|
           while line = err.gets
