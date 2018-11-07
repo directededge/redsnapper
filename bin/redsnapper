@@ -15,4 +15,9 @@ OptionParser.new do |opts|
   end
 end.parse!
 
-RedSnapper.new(ARGV.shift, options.merge(:tarsnap_options => ARGV)).run
+archive = ARGV.shift
+if archive.nil?
+  abort("Missing 'archive' parameter")
+end
+
+RedSnapper.new(archive, options.merge(:tarsnap_options => ARGV)).run
