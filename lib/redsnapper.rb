@@ -9,6 +9,7 @@ class RedSnapper
 
   EXIT_ERROR = "tarsnap: Error exit delayed from previous errors.\n"
   NOT_OLDER_ERROR = "File on disk is not older; skipping.\n"
+  ALREADY_EXISTS = ": Already exists\n"  # -k
 
   GLOB_CHARS = '*?[]{}'
 
@@ -46,7 +47,7 @@ class RedSnapper
         command = [ TARSNAP, '-xvf', @archive, *(@options[:tarsnap_options] + chunk) ]
         Open3.popen3(*command) do |_, _, err|
           while line = err.gets
-            next if line.end_with?(NOT_OLDER_ERROR)
+            next if line.end_with?(NOT_OLDER_ERROR) or line.end_with?(ALREADY_EXISTS)
             if line == EXIT_ERROR
               @error = true
               next
