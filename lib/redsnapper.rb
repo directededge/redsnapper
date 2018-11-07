@@ -43,8 +43,15 @@ class RedSnapper
         # The following gross hack works around this gross bug in BSD tar that tarsnap inherits:
         # https://github.com/Tarsnap/tarsnap/issues/329
         chunk.map! { |file| file.gsub(/([#{Regexp.escape(GLOB_CHARS)}])/) { |m| "\\#{m}" } }
-        command = [ TARSNAP, '-xvf', @archive, *(@options[:tarsnap_options] + chunk) ]
-        Open3.popen3(*command) do |_, _, err|
+        command = [ TARSNAP, '-xpf', @archive, '--null', '-T', '-', *@options[:tarsnap_options] ]
+        Open3.popen3(*command) do |stin, _, err|
+          chunk.each do |file|
+            stin.write file
+            stin.putc 0
+          end
+          stin.flush
+          stin.close
+
           while line = err.gets
             next if line.end_with?(NOT_OLDER_ERROR)
             if line == EXIT_ERROR
